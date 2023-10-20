@@ -1,11 +1,20 @@
 #include "USB.h"
 #include "USBHIDKeyboard.h"
-USBHIDKeyboard Keyboard;
-bool run = false;
 
+USBHIDKeyboard Keyboard;
+volatile bool run = false;
 const int buttonPin = 0;
+const int ledPin = 15;
+
+//CONFIG
+const int interval = 500;
+const byte key = KEY_END;
+//END CONFIG
+
 void setup(){
   pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(ledPin,OUTPUT);
+  attachInterrupt(digitalPinToInterrupt(buttonPin), changeState, RISING);
 
   Keyboard.begin();
 
@@ -17,15 +26,16 @@ void setup(){
 }
 
 void loop(){
-  while (digitalRead(buttonPin) == HIGH){
     if(run){
-      Keyboard.write(KEY_CAPS_LOCK);
-      delay(500);
+      Keyboard.write(key);
+      digitalWrite(ledPin,HIGH);
     }
     else{
-      delay(500);
+      digitalWrite(ledPin,LOW);
     }
-  }
-  delay(1000);
-  run = !run;
+    delay(interval);
+}
+
+void changeState(){
+    run = !run;
 }
